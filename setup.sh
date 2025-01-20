@@ -1,1 +1,0 @@
-echo "Checking Python installation..."
