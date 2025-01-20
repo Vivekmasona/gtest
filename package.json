@@ -1,0 +1,16 @@
+{
+  "name": "youtube-downloader-streamlit",
+  "version": "1.0.0",
+  "description": "YouTube Downloader API using Streamlit",
+  "main": "app.py",
+  "scripts": {
+    "start": "streamlit run app.py"
+  },
+  "engines": {
+    "node": "14.x"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "keywords": [],
+  "license": "ISC"
+}
