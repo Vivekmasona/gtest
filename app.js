@@ -1,52 +1,52 @@
-const express = require('express');
-const ytDlp = require('yt-dlp');
+import express from 'express';
+import { exec } from 'child_process';
 
 const app = express();
-const port = process.env.PORT || 3000;
 
-// API route to get the playback URL
-app.get('/play', async (req, res) => {
-  const youtubeUrl = req.query.url;
+app.get('/json', (req, res) => {
+  const youtubeUrl = req.query.url as string;
 
   if (!youtubeUrl) {
     return res.status(400).json({
-      status: 'error',
-      message: 'No URL provided. Use "?url=YOUTUBE_URL" in the query.',
+      status: "error",
+      message: "No URL provided. Use '?url=YOUTUBE_URL' in the query."
     });
   }
 
   try {
-    // yt-dlp options for extracting URL without downloading
-    const options = ['-e', '--no-warnings', '--quiet', '--extract-audio', '--audio-quality', '0', youtubeUrl];
+    const command = `yt-dlp -f bestaudio/best --get-url ${youtubeUrl}`;
 
-    // Execute the yt-dlp command
-    ytDlp.exec(options).then(info => {
-      const playbackUrl = info.url;
+    exec(command, (error, stdout, stderr) => {
+      if (error || stderr) {
+        return res.status(500).json({
+          status: "error",
+          message: error ? error.message : stderr
+        });
+      }
 
-      // Return the response as JSON
-      res.json({
-        status: 'success',
-        title: info.title,
-        playback_url: playbackUrl
-      });
-    }).catch(err => {
-      // If error occurs
-      res.status(500).json({
-        status: 'error',
-        message: 'Could not retrieve playback URL',
-        error: err.message
-      });
+      const playbackUrl = stdout.trim();
+      if (playbackUrl) {
+        res.json({
+          status: "success",
+          title: youtubeUrl,  // You can add code to extract title if needed
+          playback_url: playbackUrl
+        });
+      } else {
+        res.status(500).json({
+          status: "error",
+          message: "Could not retrieve playback URL"
+        });
+      }
     });
-  } catch (err) {
-    // General error handling
+  } catch (e) {
     res.status(500).json({
-      status: 'error',
-      message: err.message,
+      status: "error",
+      message: e.message
     });
   }
 });
 
-// Start the server
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
